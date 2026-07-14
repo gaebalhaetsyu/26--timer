@@ -1,0 +1,440 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sottosystem 스타일 타이머 - Light Olive</title>
+    <style>
+        /* 기본 리셋 및 폰트 설정 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f9faf6; /* 밝고 따뜻한 크림빛 올리브 배경 */
+            color: #3a4035; /* 다크 올리브 텍스트 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.5s ease;
+        }
+
+        /* 전체 컨테이너 */
+        .widget-container {
+            text-align: center;
+            width: 100%;
+            max-width: 480px;
+            padding: 30px 20px;
+        }
+
+        /* 1. 플립 클락 스타일 디스플레이 */
+        .clock-display {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .card-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 110px;
+        }
+
+        /* 플립 카드 (깨끗한 화이트) */
+        .card {
+            background-color: #ffffff; 
+            width: 100%;
+            height: 120px;
+            border-radius: 12px;
+            font-size: 64px;
+            font-weight: 800;
+            color: #3a4035; /* 진한 올리브 그레이 색상으로 가독성 확보 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06); /* 부드러운 그림자 */
+            overflow: hidden;
+        }
+
+        /* 카드 중간 분할 선 */
+        .card::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 2px;
+            background-color: #f0f2eb; /* 은은한 분할선 */
+            transform: translateY(-50%);
+        }
+
+        /* 단위 라벨 */
+        .unit-label {
+            margin-top: 15px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.25em;
+            color: #8a9681;
+            text-transform: uppercase;
+        }
+
+        /* 2. 중간 상태 및 구분선 */
+        .status-text {
+            margin-top: 30px;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 0.3em;
+            color: #5c6655;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .divider {
+            border: 0;
+            height: 1px;
+            background-color: #dce0d5; /* 밝은 구분선 */
+            margin: 20px auto;
+            width: 100%;
+        }
+
+        /* 3. 시간 입력 영역 */
+        .input-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group span {
+            font-size: 12px;
+            font-weight: 700;
+            color: #8a9681;
+            letter-spacing: 0.1em;
+        }
+
+        .input-group input {
+            width: 60px;
+            height: 40px;
+            background-color: #ffffff;
+            border: 1px solid #dce0d5;
+            border-radius: 8px;
+            color: #3a4035;
+            font-size: 16px;
+            font-weight: 700;
+            text-align: center;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .input-group input:focus {
+            border-color: #8a9a74;
+            box-shadow: 0 0 0 3px rgba(138, 154, 116, 0.15);
+        }
+
+        /* 화살표 스피너 제거 */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* 4. 제어 버튼 스타일링 */
+        .button-section {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            flex: 1;
+            max-width: 100px;
+            height: 45px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        /* 활성 상태의 버튼 (부드러운 세이지 그린) */
+        .btn-active {
+            background-color: #8a9a74;
+            color: #ffffff;
+        }
+
+        .btn-active:hover {
+            background-color: #74875d;
+            transform: translateY(-1px);
+        }
+
+        /* 비활성/서브 버튼 스타일 */
+        .btn-inactive {
+            background-color: #e8ebe4;
+            color: #a3a89d;
+            cursor: not-allowed;
+        }
+
+        /* 일시정지 가능한 실제 작동 시점의 스타일 */
+        .btn-ready {
+            background-color: #ffffff;
+            color: #8a9a74;
+            border: 1px solid #8a9a74;
+            cursor: pointer;
+        }
+        .btn-ready:hover {
+            background-color: #f2f5ee;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* 푸터 브랜딩 */
+        .footer-brand {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.4em;
+            color: #b5beb0;
+            text-transform: uppercase;
+        }
+
+        /* 완료 알림 스킨 변경 효과 (부드러운 코랄 핑크 톤) */
+        body.finished-alert {
+            background-color: #fff5f5; 
+        }
+        body.finished-alert .card {
+            color: #e5989b;
+            border: 1px solid rgba(229, 152, 155, 0.4);
+            animation: pulse 1.5s infinite;
+        }
+        body.finished-alert .status-text {
+            color: #e5989b;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="widget-container">
+        <div class="clock-display">
+            <div class="card-wrapper">
+                <div class="card" id="hrCard">00</div>
+                <div class="unit-label">Hour</div>
+            </div>
+            <div class="card-wrapper">
+                <div class="card" id="minCard">00</div>
+                <div class="unit-label">Minute</div>
+            </div>
+            <div class="card-wrapper">
+                <div class="card" id="secCard">00</div>
+                <div class="unit-label">Second</div>
+            </div>
+        </div>
+
+        <div class="status-text" id="statusLabel">Standby</div>
+        <hr class="divider">
+
+        <div class="input-section" id="inputSection">
+            <div class="input-group">
+                <span>HR</span>
+                <input type="number" id="inputHr" min="0" max="99" value="0">
+            </div>
+            <div class="input-group">
+                <span>MIN</span>
+                <input type="number" id="inputMin" min="0" max="59" value="5">
+            </div>
+        </div>
+
+        <div class="button-section">
+            <button id="startBtn" class="btn-active">Start</button>
+            <button id="pauseBtn" class="btn-inactive" disabled>Pause</button>
+            <button id="resumeBtn" class="btn-inactive" style="display: none;" disabled>Resume</button>
+            <button id="resetBtn" class="btn-active">Reset</button>
+        </div>
+
+        <div class="footer-brand">Sottosystem</div>
+    </div>
+
+    <script>
+        // 변수 상태 제어
+        let countdown;
+        let totalSecondsLeft = 0;
+        let isRunning = false;
+
+        // DOM 객체 바인딩
+        const hrCard = document.getElementById('hrCard');
+        const minCard = document.getElementById('minCard');
+        const secCard = document.getElementById('secCard');
+        
+        const inputSection = document.getElementById('inputSection');
+        const inputHr = document.getElementById('inputHr');
+        const inputMin = document.getElementById('inputMin');
+
+        const statusLabel = document.getElementById('statusLabel');
+
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resumeBtn = document.getElementById('resumeBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // 초기 화면 업데이트 세팅
+        function updateDisplay(totalSeconds) {
+            const hrs = Math.floor(totalSeconds / 3600);
+            const mins = Math.floor((totalSeconds % 3600) / 60);
+            const secs = totalSeconds % 60;
+
+            hrCard.textContent = String(hrs).padStart(2, '0');
+            minCard.textContent = String(mins).padStart(2, '0');
+            secCard.textContent = String(secs).padStart(2, '0');
+        }
+
+        // 입력창 변화에 실시간 반응하여 카드 내용 변경
+        function syncDisplayFromInputs() {
+            if (isRunning) return;
+            const hrs = parseInt(inputHr.value) || 0;
+            const mins = parseInt(inputMin.value) || 0;
+            updateDisplay((hrs * 3600) + (mins * 60));
+        }
+
+        inputHr.addEventListener('input', syncDisplayFromInputs);
+        inputMin.addEventListener('input', syncDisplayFromInputs);
+
+        // 카운트다운 코어 동작 함수
+        function startCountdown() {
+            countdown = setInterval(() => {
+                totalSecondsLeft--;
+                updateDisplay(totalSecondsLeft);
+
+                if (totalSecondsLeft <= 0) {
+                    clearInterval(countdown);
+                    triggerFinishState();
+                }
+            }, 1000);
+        }
+
+        // 완료 시 시각 피드백 기능 구현
+        function triggerFinishState() {
+            statusLabel.textContent = "Finished!";
+            document.body.classList.add('finished-alert');
+            isRunning = false;
+
+            // 버튼 상태 완료에 맞추기
+            pauseBtn.style.display = 'inline-block';
+            pauseBtn.disabled = true;
+            pauseBtn.className = 'btn-inactive';
+            resumeBtn.style.display = 'none';
+            startBtn.style.display = 'none';
+        }
+
+        // 1. [START] 버튼 클릭 핸들러
+        startBtn.addEventListener('click', () => {
+            const hrs = parseInt(inputHr.value) || 0;
+            const mins = parseInt(inputMin.value) || 0;
+            totalSecondsLeft = (hrs * 3600) + (mins * 60);
+
+            if (totalSecondsLeft <= 0) {
+                alert("0보다 큰 시간을 입력해주세요.");
+                return;
+            }
+
+            isRunning = true;
+            statusLabel.textContent = "Running";
+            statusLabel.style.color = "#74875d"; // 작동 시 진한 올리브 포인트
+
+            // 입력 영역 잠금
+            inputSection.style.opacity = '0.4';
+            inputHr.disabled = true;
+            inputMin.disabled = true;
+
+            // 버튼 상태 스위칭
+            startBtn.style.display = 'none';
+            pauseBtn.style.display = 'inline-block';
+            pauseBtn.disabled = false;
+            pauseBtn.className = 'btn-ready'; 
+            resumeBtn.style.display = 'none';
+
+            startCountdown();
+        });
+
+        // 2. [PAUSE] 버튼 클릭 핸들러
+        pauseBtn.addEventListener('click', () => {
+            clearInterval(countdown);
+            statusLabel.textContent = "Paused";
+            statusLabel.style.color = "#d4a373"; // 일시정지 시 따뜻한 골드/오렌지 포인트
+
+            pauseBtn.style.display = 'none';
+            resumeBtn.style.display = 'inline-block';
+            resumeBtn.disabled = false;
+            resumeBtn.className = 'btn-active'; 
+        });
+
+        // 3. [RESUME] 버튼 클릭 핸들러
+        resumeBtn.addEventListener('click', () => {
+            statusLabel.textContent = "Running";
+            statusLabel.style.color = "#74875d";
+
+            resumeBtn.style.display = 'none';
+            pauseBtn.style.display = 'inline-block';
+            pauseBtn.className = 'btn-ready';
+
+            startCountdown();
+        });
+
+        // 4. [RESET] 버튼 클릭 핸들러
+        resetBtn.addEventListener('click', () => {
+            clearInterval(countdown);
+            isRunning = false;
+
+            // 비주얼 스킨 원복
+            document.body.classList.remove('finished-alert');
+            statusLabel.textContent = "Standby";
+            statusLabel.style.color = "#5c6655";
+
+            // 입력 영역 활성화 복원
+            inputSection.style.opacity = '1';
+            inputHr.disabled = false;
+            inputMin.disabled = false;
+
+            // 입력값 기준 디스플레이 동기화
+            syncDisplayFromInputs();
+
+            // 버튼 원본 상태 레이아웃 복원
+            startBtn.style.display = 'inline-block';
+            pauseBtn.style.display = 'inline-block';
+            pauseBtn.disabled = true;
+            pauseBtn.className = 'btn-inactive';
+            resumeBtn.style.display = 'none';
+        });
+
+        // 페이지 로딩 초기화 적용
+        syncDisplayFromInputs();
+    </script>
+</body>
+</html>
